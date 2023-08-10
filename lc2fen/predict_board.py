@@ -384,9 +384,13 @@ def test_predict_board(obtain_predictions):
             'r': Image.open('sprites/black_rook.png'),
             'p': Image.open('sprites/black_pawn.png'),
         }
-        board_img = Image.open('sprites/empty_board.jpeg')
 
+        board_img = Image.open('sprites/empty_board.jpeg')
         square_size = board_img.size[0] // 8
+
+        # Resize the piece images to match the square_size
+        for piece_symbol, img in piece_images.items():
+            piece_images[piece_symbol] = img.resize((square_size, square_size))
 
         for square, piece in board.piece_map().items():
             x = (square % 8) * square_size
