@@ -38,6 +38,39 @@ from lc2fen.fen import (
 from lc2fen.infer_pieces import infer_chess_pieces
 from lc2fen.split_board import split_square_board_image
 
+piece_images = {
+            'K': Image.open('sprites/white_king.png'),
+            'Q': Image.open('sprites/white_queen.png'),
+            'B': Image.open('sprites/white_bishop.png'),
+            'N': Image.open('sprites/white_knight.png'),
+            'R': Image.open('sprites/white_rook.png'),
+            'P': Image.open('sprites/white_pawn.png'),
+            'k': Image.open('sprites/black_king.png'),
+            'q': Image.open('sprites/black_queen.png'),
+            'b': Image.open('sprites/black_bishop.png'),
+            'n': Image.open('sprites/black_knight.png'),
+            'r': Image.open('sprites/black_rook.png'),
+            'p': Image.open('sprites/black_pawn.png'),
+        }
+board_img = Image.open('sprites/empty_board.jpeg')
+
+def save_prediction_image(fen, filepath):
+    # Create a board from FEN
+    board = chess.Board(fen)
+
+    square_size = board_img.size[0] // 8
+
+    # Resize the piece images to match the square_size
+    for piece_symbol, img in piece_images.items():
+        piece_images[piece_symbol] = img.resize((square_size, square_size))
+
+    for square, piece in board.piece_map().items():
+        x = (square % 8) * square_size
+        y = (7 - square // 8) * square_size  # 7 - because we're starting from the top
+        board_img.paste(piece_images[piece.symbol()], (x, y))
+
+    board_img.save(filepath)
+
 
 def load_image(img_path, img_size, preprocess_func):
     """
@@ -366,38 +399,7 @@ def test_predict_board(obtain_predictions):
             fens[i],
             False,
         )
-
-        # Create a board from FEN
-        board = chess.Board(fen)
-
-        piece_images = {
-            'K': Image.open('sprites/white_king.png'),
-            'Q': Image.open('sprites/white_queen.png'),
-            'B': Image.open('sprites/white_bishop.png'),
-            'N': Image.open('sprites/white_knight.png'),
-            'R': Image.open('sprites/white_rook.png'),
-            'P': Image.open('sprites/white_pawn.png'),
-            'k': Image.open('sprites/black_king.png'),
-            'q': Image.open('sprites/black_queen.png'),
-            'b': Image.open('sprites/black_bishop.png'),
-            'n': Image.open('sprites/black_knight.png'),
-            'r': Image.open('sprites/black_rook.png'),
-            'p': Image.open('sprites/black_pawn.png'),
-        }
-
-        board_img = Image.open('sprites/empty_board.jpeg')
-        square_size = board_img.size[0] // 8
-
-        # Resize the piece images to match the square_size
-        for piece_symbol, img in piece_images.items():
-            piece_images[piece_symbol] = img.resize((square_size, square_size))
-
-        for square, piece in board.piece_map().items():
-            x = (square % 8) * square_size
-            y = (7 - square // 8) * square_size  # 7 - because we're starting from the top
-            board_img.paste(piece_images[piece.symbol()], (x, y))
-
-        board_img.save(f"outputs/output_test_{i}.png")
+        save_prediction_image(fen, f"outputs/output_test_{i+1}")
 
         # If we have an invalid previous FEN
         if previous_fens[i] is not None and not check_validity_of_fen(previous_fens[i]):
@@ -415,6 +417,7 @@ def test_predict_board(obtain_predictions):
                 previous_fens[i],
             )
             print_fen_comparison("test" + str(i + 1) + ".jpg", fen, fens[i], True)
+            save_prediction_image(fen, f"outputs/output_test_with_previous_fen{i+1}")
 
 
 def detect_input_board(board_path, board_corners=None):
