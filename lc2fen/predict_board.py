@@ -65,16 +65,22 @@ def save_prediction_image(fen, filepath):
     square_size = board_img.size[0] // 8
 
     # Resize the piece images to match the square_size
+    resized_piece_images = {}
     for piece_symbol, img in piece_images.items():
-        piece_images[piece_symbol] = img.resize((square_size, square_size), Image.ANTIALIAS)
+        resized_piece_images[piece_symbol] = img.resize((square_size, square_size), Image.ANTIALIAS)
 
     for square, piece in board.piece_map().items():
         x = (square % 8) * square_size
         y = (7 - square // 8) * square_size  # 7 - because we're starting from the top
-        mask = piece_images[piece.symbol()].split()[3]  # Get the alpha channel directly
-        board_img.paste(piece_images[piece.symbol()], (x, y), mask)
 
-    #board_img.save(filepath)
+        # Ensure you have an alpha channel for transparency
+        if resized_piece_images[piece.symbol()].mode == 'RGBA':
+            mask = resized_piece_images[piece.symbol()].split()[3]  # Get the alpha channel
+            board_img.paste(resized_piece_images[piece.symbol()], (x, y), mask)
+        else:
+            board_img.paste(resized_piece_images[piece.symbol()], (x, y))
+
+    board_img.save(filepath)
 
 
 def load_image(img_path, img_size, preprocess_func):
