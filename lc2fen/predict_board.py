@@ -57,6 +57,10 @@ board_img = Image.open('sprites/empty_board.jpeg')
 def save_prediction_image(fen, filepath):
     # Create a board from FEN
     board = chess.Board(fen)
+    
+    print(board.fen())
+    print(board.piece_map())
+
 
     square_size = board_img.size[0] // 8
 
@@ -70,7 +74,7 @@ def save_prediction_image(fen, filepath):
         mask = piece_images[piece.symbol()].split()[3]  # Get the alpha channel directly
         board_img.paste(piece_images[piece.symbol()], (x, y), mask)
 
-    board_img.save(filepath)
+    #board_img.save(filepath)
 
 
 def load_image(img_path, img_size, preprocess_func):
