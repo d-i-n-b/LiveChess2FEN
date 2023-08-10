@@ -399,7 +399,7 @@ def test_predict_board(obtain_predictions):
             fens[i],
             False,
         )
-        save_prediction_image(fen, f"outputs/output_test_{i+1}")
+        save_prediction_image(fen, f"outputs/output_test_{i+1}.png")
 
         # If we have an invalid previous FEN
         if previous_fens[i] is not None and not check_validity_of_fen(previous_fens[i]):
