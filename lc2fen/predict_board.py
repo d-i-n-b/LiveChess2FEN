@@ -366,6 +366,17 @@ def test_predict_board(obtain_predictions):
             False,
         )
 
+        # Create a board from FEN
+        board = chess.Board(fen)
+
+        # Generate an SVG image of the board
+        svg = chess.svg.board(board=board)
+
+        # Save the SVG (you can convert this to other image formats if needed)
+        with open(f"board_{i}.svg", "w") as file:
+            file.write(svg)
+
+
         # If we have an invalid previous FEN
         if previous_fens[i] is not None and not check_validity_of_fen(previous_fens[i]):
             print(
