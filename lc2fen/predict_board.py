@@ -67,7 +67,7 @@ def save_prediction_image(fen, filepath):
     for square, piece in board.piece_map().items():
         x = (square % 8) * square_size
         y = (7 - square // 8) * square_size  # 7 - because we're starting from the top
-        board_img.paste(piece_images[piece.symbol()], (x, y))
+        board_img.paste(piece_images[piece.symbol()], (x, y), piece_images[piece.symbol_()].convert("L"))
 
     board_img.save(filepath)
 
