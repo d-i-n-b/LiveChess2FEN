@@ -13,7 +13,7 @@ import onnxruntime
 from keras.models import load_model
 from keras.utils.image_utils import load_img, img_to_array
 import chess
-from PIL import Image
+from PIL import Image, ImageOps
 
 try:
     import pycuda.driver as cuda
@@ -67,7 +67,8 @@ def save_prediction_image(fen, filepath):
     for square, piece in board.piece_map().items():
         x = (square % 8) * square_size
         y = (7 - square // 8) * square_size  # 7 - because we're starting from the top
-        board_img.paste(piece_images[piece.symbol()], (x, y), piece_images[piece.symbol()].convert("L"))
+        mask = ImageOps.invert(piece_images[piece.symbol()].convert("L"))
+        board_img.paste(piece_images[piece.symbol()], (x, y), mask)
 
     board_img.save(filepath)
 
