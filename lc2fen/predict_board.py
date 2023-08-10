@@ -62,7 +62,7 @@ def save_prediction_image(fen, filepath):
 
     # Resize the piece images to match the square_size
     for piece_symbol, img in piece_images.items():
-        piece_images[piece_symbol] = img.resize((square_size, square_size))
+        piece_images[piece_symbol] = img.resize((square_size, square_size), Image.ANTIALIAS)
 
     for square, piece in board.piece_map().items():
         x = (square % 8) * square_size
@@ -417,7 +417,7 @@ def test_predict_board(obtain_predictions):
                 previous_fens[i],
             )
             print_fen_comparison("test" + str(i + 1) + ".jpg", fen, fens[i], True)
-            save_prediction_image(fen, f"outputs/output_test_with_previous_fen{i+1}")
+            save_prediction_image(fen, f"outputs/output_test_with_previous_fen{i+1}.png")
 
 
 def detect_input_board(board_path, board_corners=None):
