@@ -385,7 +385,7 @@ def test_predict_board(obtain_predictions):
             'r': Image.open('sprites/black_rook.png'),
             'p': Image.open('sprites/black_pawn.png'),
         }
-        board_img = Image.open('empty_board.png')
+        board_img = Image.open('sprites/empty_board.jpeg')
 
         square_size = board_img.size[0] // 8  # Assuming a square board
 
