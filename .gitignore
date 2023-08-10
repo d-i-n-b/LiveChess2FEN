@@ -11,6 +11,7 @@ venv/
 data/
 predictions/
 cont_predictions/
+sprites/
 
 # Trained models
 selected_models/
