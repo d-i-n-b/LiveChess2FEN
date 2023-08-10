@@ -468,6 +468,7 @@ def infer_chess_pieces(pieces_probs, a1_pos, previous_fen=None):
         If it is not None, improves piece inference.
     :return: A list of the inferred chess pieces in FEN notation order.
     """
+    # This is to orientate the board and then translate it again to list
     pieces_probs = board_to_list(list_to_board(pieces_probs, a1_pos))
 
     # None represents that the piece type of that square has not been determined yet
@@ -656,6 +657,7 @@ def changed_squares(previous_fen, current_probs):
         the positions in which there has been a significant state
         change.
     """
+    # Convert the FEN to board and then to list
     previous_list = board_to_list(fen_to_board(previous_fen))
     changed_squares_idx = []
     for idx, previous_piece in enumerate(previous_list):

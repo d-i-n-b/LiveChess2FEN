@@ -74,6 +74,7 @@ class ImageObject:
 
     def crop(self, pts):
         """Crop using 4 points transform."""
+        # The points are scaled. We have to un-scale them.
         pts_orig = image_scale(pts, self.scale[-1])
         img_crop = image_transform(self.images[-1]["orig"], pts_orig)
         self.points.append(pts_orig)

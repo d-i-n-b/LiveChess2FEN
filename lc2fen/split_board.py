@@ -20,14 +20,18 @@ def split_square_board_image(board_image, output_name, out_dir, board=None):
     :param board: If board is not None, it represents the 8x8 board
         matrix with the corresponding labels in each position.
     """
+    # Reads the image
     img = cv2.imread(board_image)
+    # The height and width must be equal
     if img.shape[0] != img.shape[1]:
         raise ValueError("Image must be a square in size")
+    # The chessboard is an 8x8 grid
     square_size = img.shape[0] // 8  # 1200 / 8
     for row_start in range(0, img.shape[0], square_size):
         i = row_start // square_size
         for col_start in range(0, img.shape[1], square_size):
             j = col_start // square_size
+            # out_loc = "{out_dir}/{str(board[i][j])}/{output_name}_{i}_{j}.jpg"
             if board:
                 out_loc = (
                     str(out_dir)
@@ -53,6 +57,7 @@ def split_square_board_image(board_image, output_name, out_dir, board=None):
                     + ".jpg"
                 )
 
+            # Write the cropped square image into out_loc
             cv2.imwrite(
                 out_loc,
                 img[

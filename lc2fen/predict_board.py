@@ -48,9 +48,14 @@ def load_image(img_path, img_size, preprocess_func):
         image.
     :return: The loaded image.
     """
+    # Load the image from the image filepath
     img = load_img(img_path, target_size=(img_size, img_size))
+    # Transform the image into a NumPy array
     img_tensor = img_to_array(img)
+    # Add an extra dimension 
+    # (at the beginning, that, means, adding extra initial and final brackets)
     img_tensor = np.expand_dims(img_tensor, axis=0)
+    # Return the array with the preprocessing function applied to it
     return preprocess_func(img_tensor)
 
 
@@ -72,12 +77,28 @@ def predict_board_keras(
     :param previous_fen: FEN string of the previous board position.
     :return: Predicted FEN string representing the chessboard.
     """
+    # Load the Keras model from its filepath
     model = load_model(model_path)
 
     def obtain_pieces_probs(pieces):
+        """
+        Returns a list of predictions for the input iterable of filepaths
+
+        Args:
+            pieces (Iterable[str]): The iterable with the filepaths of the images
+                                    to predict.
+
+        Returns:
+            predictions: The list of predictions the model outputs for the images
+        """
         predictions = []
         for piece in pieces:
+            # Load the image
             piece_img = load_image(piece, img_size, pre_input)
+            # Make a prediction 
+            # (the index [0] is because load_image 
+            # wraps the image into an extra dimension, 
+            # since the model is trained with multiple images per batch)
             predictions.append(model.predict(piece_img)[0])
         return predictions
 
@@ -325,11 +346,14 @@ def continuous_predictions(path, a1_pos, obtain_pieces_probs):
 
 def test_predict_board(obtain_predictions):
     """Tests board prediction."""
+    # Reads the correct FENs from the test file in the filepath below
     fens, a1_squares, previous_fens = read_correct_fen(
         os.path.join("predictions", "boards_with_previous.fen")
     )
 
+    # There are 5 file tests: test{i+1}.jpg
     for i in range(5):
+        # Predict without previous FEN
         fen = time_predict_board(
             os.path.join("predictions", "test" + str(i + 1) + ".jpg"),
             a1_squares[i],
@@ -342,12 +366,14 @@ def test_predict_board(obtain_predictions):
             False,
         )
 
+        # If we have an invalid previous FEN
         if previous_fens[i] is not None and not check_validity_of_fen(previous_fens[i]):
             print(
                 f"Warning: the previous FEN for test{i + 1}.jpg is ignored because it is invalid for a standard physical chess set\n"
             )
             previous_fens[i] = None
 
+        # If the previous FEN was valid, predict with it
         if previous_fens[i] is not None:
             fen = time_predict_board(
                 os.path.join("predictions", "test" + str(i + 1) + ".jpg"),
@@ -374,13 +400,20 @@ def detect_input_board(board_path, board_corners=None):
     :return: A list of the new coordinates of the four board corners
         detected.
     """
+    # Read the image from the filepath
     input_image = cv2.imread(board_path)
     head, tail = os.path.split(board_path)
     tmp_dir = os.path.join(head, "tmp/")
+    # If the path in which we intend to store the resulting image 
+    # already exists, we delete it and all of its contents so we can
+    # overwrite them
     if os.path.exists(tmp_dir):
         shutil.rmtree(tmp_dir)
+    # Create the directory in which we are going to put our resulting image
     os.mkdir(tmp_dir)
+    # Detect the corners of the chessboard and crop the image
     image_object = detect(input_image, os.path.join(head, "tmp", tail), board_corners)
+    # Compute the coordinates of the corners in the original image
     board_corners, _ = compute_corners(image_object)
     return board_corners
 
@@ -395,11 +428,17 @@ def obtain_individual_pieces(board_path):
         For example: '../predictions/board.jpg'.
     :return: List with the path to each piece image.
     """
+    # Since detect_input_board stored the detected chessboard image
+    # in a filepath similar to the original but with an intercalated
+    # tmp/ folder, we have to modify board_path according to this.
     head, tail = os.path.split(board_path)
     tmp_dir = os.path.join(head, "tmp/")
     pieces_dir = os.path.join(tmp_dir, "pieces/")
+    # Create the directory in which we intend to store the squares files
     os.mkdir(pieces_dir)
+    # This will create a .jpg image for every square, partitioning the cropped chessboard image
     split_square_board_image(os.path.join(tmp_dir, tail), "", pieces_dir)
+    # Return the list of all filepaths in pieces_dir, that is, every chessboard square image filepath.
     return sorted(glob.glob(pieces_dir + "/*.jpg"))
 
 
@@ -422,33 +461,47 @@ def time_predict_board(board_path, a1_pos, obtain_pieces_probs, previous_fen=Non
     :param previous_fen: FEN string of the previous board position.
     :return: Predicted fen string representing the chessboard.
     """
+    # Initialize the variable for the time counter
     total_time = 0
 
+    # Start the counter
     start = time.perf_counter()
+    
+    # Detect the chessboard and time the process
     detect_input_board(board_path)
     elapsed_time = time.perf_counter() - start
     total_time += elapsed_time
     print(f"Elapsed time detecting the input board: {elapsed_time}")
 
+    # Reset and restart the counter
     start = time.perf_counter()
+    # Obtain all of the individual squares in the chessboard and time the process
     pieces = obtain_individual_pieces(board_path)
     elapsed_time = time.perf_counter() - start
     total_time += elapsed_time
     print(f"Elapsed time obtaining the individual pieces: {elapsed_time}")
 
+    # Reset and restart the counter
     start = time.perf_counter()
+    # Obtain prediction probabilities for the pieces placed in each square and time the process
     pieces_probs = obtain_pieces_probs(pieces)
     elapsed_time = time.perf_counter() - start
     total_time += elapsed_time
     print(f"Elapsed time predicting probabilities: {elapsed_time}")
 
+    # Reset and restart the counter
     start = time.perf_counter()
+    # Based on the prediction probabilities and inferring techniques powered by chess engines for
+    # selecting the most plausible scenarios (or by using the previous FEN
+    # and try detecting a move), infer the chess pieces positions and time the process
     predictions = infer_chess_pieces(pieces_probs, a1_pos, previous_fen)
     elapsed_time = time.perf_counter() - start
     total_time += elapsed_time
     print(f"Elapsed time inferring chess pieces: {elapsed_time}")
 
+    # Reset and restart the counter
     start = time.perf_counter()
+    # Convert to FEN notation and time the process
     board = list_to_board(predictions)
     fen = board_to_fen(board)
     elapsed_time = time.perf_counter() - start
@@ -502,15 +555,20 @@ def read_correct_fen(fen_file):
         lines = fen_fd.read().splitlines()
         for line in lines:
             line = line.split()
-            if not len(line) in [2, 3]:
+            # A valid line has to have 
+            # at least a FEN and a1_square,
+            # and optionally a previous FEN
+            if not len(line) in [2, 3]: 
                 raise ValueError(
                     "All lines in fen file must have the format "
                     "'fen orientation [previous_fen]'"
                 )
             fens.append(line[0])
             a1_squares.append(line[1])
+            # If there isn't a previous FEN
             if len(line) == 2:
                 previous_fens.append(None)
+            # If there is
             else:
                 previous_fens.append(line[2])
     return fens, a1_squares, previous_fens

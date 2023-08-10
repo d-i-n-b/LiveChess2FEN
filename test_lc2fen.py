@@ -13,7 +13,7 @@ from lc2fen.predict_board import (
 )
 
 
-ACTIVATE_KERAS = False
+ACTIVATE_KERAS = True
 MODEL_PATH_KERAS = "selected_models/Xception_last.h5"
 IMG_SIZE_KERAS = 299
 PRE_INPUT_KERAS = prein_xception

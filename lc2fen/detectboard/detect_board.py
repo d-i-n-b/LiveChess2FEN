@@ -105,8 +105,11 @@ def detect(input_image, output_board, board_corners=None):
     # Check if we can skip full board detection (if board position is
     # already known)
     if board_corners is not None:
+        # found is a bool indicating if the board corners were correct,
+        # board_corners is the cropped image.
         found, cropped_img = check_board_position(input_image, board_corners)
         if found:
+            # Write the cropped image into the output_board intended filepath
             cv2.imwrite(output_board, cropped_img)
             image = ImageObject(input_image)
             # For corners calculation
@@ -118,8 +121,10 @@ def detect(input_image, output_board, board_corners=None):
     n_layers = 3
     image = ImageObject(input_image)
     for i in range(n_layers):
+        # Perform an iteration of SLID, LAPS and CPS algorithms
         __layer(image)
         debug.DebugImage(image["orig"]).save(f"end_iteration{i}")
+    # Write the resulting image into the intended filepath
     cv2.imwrite(output_board, image["orig"])
 
     return image
