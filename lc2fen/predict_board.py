@@ -370,7 +370,6 @@ def test_predict_board(obtain_predictions):
         # Create a board from FEN
         board = chess.Board(fen)
 
-        # Assuming you have individual images for each piece and an empty board image
         piece_images = {
             'K': Image.open('sprites/white_king.png'),
             'Q': Image.open('sprites/white_queen.png'),
@@ -387,14 +386,14 @@ def test_predict_board(obtain_predictions):
         }
         board_img = Image.open('sprites/empty_board.jpeg')
 
-        square_size = board_img.size[0] // 8  # Assuming a square board
+        square_size = board_img.size[0] // 8
 
         for square, piece in board.piece_map().items():
             x = (square % 8) * square_size
             y = (7 - square // 8) * square_size  # 7 - because we're starting from the top
             board_img.paste(piece_images[piece.symbol()], (x, y))
 
-        board_img.show()
+        board_img.save(f"outputs/output_test_{i}.png")
 
         # If we have an invalid previous FEN
         if previous_fens[i] is not None and not check_validity_of_fen(previous_fens[i]):
