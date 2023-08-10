@@ -13,6 +13,7 @@ import onnxruntime
 from keras.models import load_model
 from keras.utils.image_utils import load_img, img_to_array
 import chess
+from PIL import Image
 
 try:
     import pycuda.driver as cuda
@@ -369,13 +370,31 @@ def test_predict_board(obtain_predictions):
         # Create a board from FEN
         board = chess.Board(fen)
 
-        # Generate an SVG image of the board
-        svg = chess.svg.board(board=board)
+        # Assuming you have individual images for each piece and an empty board image
+        piece_images = {
+            'K': Image.open('sprites/white_king.png'),
+            'Q': Image.open('sprites/white_queen.png'),
+            'B': Image.open('sprites/white_bishop.png'),
+            'N': Image.open('sprites/white_knight.png'),
+            'R': Image.open('sprites/white_rook.png'),
+            'P': Image.open('sprites/white_pawn.png'),
+            'k': Image.open('sprites/black_king.png'),
+            'q': Image.open('sprites/black_queen.png'),
+            'b': Image.open('sprites/black_bishop.png'),
+            'n': Image.open('sprites/black_knight.png'),
+            'r': Image.open('sprites/black_rook.png'),
+            'p': Image.open('sprites/black_pawn.png'),
+        }
+        board_img = Image.open('empty_board.png')
 
-        # Save the SVG (you can convert this to other image formats if needed)
-        with open(f"board_{i}.svg", "w") as file:
-            file.write(svg)
+        square_size = board_img.size[0] // 8  # Assuming a square board
 
+        for square, piece in board.piece_map().items():
+            x = (square % 8) * square_size
+            y = (7 - square // 8) * square_size  # 7 - because we're starting from the top
+            board_img.paste(piece_images[piece.symbol()], (x, y))
+
+        board_img.show()
 
         # If we have an invalid previous FEN
         if previous_fens[i] is not None and not check_validity_of_fen(previous_fens[i]):
