@@ -38,7 +38,7 @@ from lc2fen.fen import (
 from lc2fen.infer_pieces import infer_chess_pieces
 from lc2fen.split_board import split_square_board_image
 
-piece_images = {
+original_piece_images = {
             'K': Image.open('sprites/white_king.png'),
             'Q': Image.open('sprites/white_queen.png'),
             'B': Image.open('sprites/white_bishop.png'),
@@ -52,9 +52,11 @@ piece_images = {
             'r': Image.open('sprites/black_rook.png'),
             'p': Image.open('sprites/black_pawn.png'),
         }
-board_img = Image.open('sprites/empty_board.jpeg')
+original_board_img = Image.open('sprites/empty_board.jpeg')
 
 def save_prediction_image(fen, filepath):
+    piece_images = original_piece_images.copy()
+    board_img = original_board_img.copy()
     # Create a board from FEN
     board = chess.Board(fen)
     
